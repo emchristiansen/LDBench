@@ -24,7 +24,6 @@ library
     LDBench.Detector
     LDBench.Detectors.OpenCV
     LDBench.Detectors.BoundedDetector
-    LDBench.OpenCVComputation
 
   default-language: 
     Haskell2010

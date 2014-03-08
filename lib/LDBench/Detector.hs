@@ -5,7 +5,7 @@ import Data.Vector (Vector)
 import OpenCVThrift.OpenCV
 import OpenCVThrift.OpenCV.Core
 
-import LDBench.OpenCVComputation
+{-import LDBench.OpenCVComputation-}
 import LDBench.Image
 
 class Detector a where

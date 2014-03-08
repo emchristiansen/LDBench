@@ -12,7 +12,6 @@ import OpenCVThrift.OpenCV.Core.MatUtil
 import OpenCVThrift.OpenCV.Features2D.Features2D
 import qualified OpenCVThrift.OpenCV.Features2D.Features2D
 
-import LDBench.OpenCVComputation
 
 -- TODO: We should not hard-code dependencies on any particular client.
 -- But we're doing it here cause it's easy.
@@ -28,12 +27,12 @@ imageToMatUnpacked :: Image -> MatUnpacked
 imageToMatUnpacked = undefined
 
 
-imageToMat :: Image -> OpenCVComputation Mat
+imageToMat :: Image -> OpenCV.OpenCVComputation Mat
 imageToMat image = 
   let 
     matUnpacked = imageToMatUnpacked image
   in
-    convert2 pack T8UC3 matUnpacked
+    OpenCV.convert2 pack T8UC3 matUnpacked
 {-imageToMat image = -}
   {-let-}
     {-matUnpacked = imageToMatUnpacked image-}
@@ -42,10 +41,10 @@ imageToMat image =
   {-in-}
     {-OpenCVComputation mat-}
 
-helper :: String -> Image -> OpenCVComputation [KeyPoint]
+helper :: String -> Image -> OpenCV.OpenCVComputation [KeyPoint]
 helper detector image = do
   mat <- imageToMat image
-  keyPoints <- convert2
+  keyPoints <- OpenCV.convert2
     OpenCVThrift.OpenCV.Features2D.Features2D.detect
     (Data.Text.Lazy.pack detector)
     mat
