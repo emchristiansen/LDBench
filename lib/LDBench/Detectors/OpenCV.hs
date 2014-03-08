@@ -1,6 +1,10 @@
 module LDBench.Detectors.OpenCV where
 
+import qualified Data.Vector
 import Data.Vector (Vector)
+import qualified Data.Text.Lazy
+import Data.List
+import Data.Ord
 
 import qualified OpenCVThrift.OpenCV as OpenCV
 import OpenCVThrift.OpenCV.Core
@@ -18,30 +22,37 @@ import LDBench.Image
 import LDBench.Detector
 
 -- TODO: These enums should be defined as part of the Thrift interface.
-data OpenCV = BRISK
+data OpenCV = BRISK | FAST
 
 imageToMatUnpacked :: Image -> MatUnpacked
 imageToMatUnpacked = undefined
 
+
 imageToMat :: Image -> OpenCVComputation Mat
 imageToMat image = 
-  let
+  let 
     matUnpacked = imageToMatUnpacked image
-    mat :: forall p t. OpenCV.Client p t -> IO Mat
-    mat client = pack client T8UC3 matUnpacked
   in
-    OpenCVComputation mat
+    convert2 pack T8UC3 matUnpacked
+{-imageToMat image = -}
+  {-let-}
+    {-matUnpacked = imageToMatUnpacked image-}
+    {-mat :: forall p t. OpenCV.Client p t -> IO Mat-}
+    {-mat client = pack client T8UC3 matUnpacked-}
+  {-in-}
+    {-OpenCVComputation mat-}
 
-helper detector image =
-  let
-    OpenCVComputation matClosure = imageToMat image
-    keyPoints :: forall p t. OpenCV.Client p t -> IO (Vector KeyPoint)
-    keyPoints client = do
-      mat <- matClosure client
-      OpenCVThrift.OpenCV.Features2D.Features2D.detect client detector mat
-  in
-    OpenCVComputation keyPoints
+helper :: String -> Image -> OpenCVComputation [KeyPoint]
+helper detector image = do
+  mat <- imageToMat image
+  keyPoints <- convert2
+    OpenCVThrift.OpenCV.Features2D.Features2D.detect
+    (Data.Text.Lazy.pack detector)
+    mat
+  let sorted = reverse $ sortBy (comparing f_KeyPoint_response) $ Data.Vector.toList keyPoints
+  return $ sorted 
 
 instance Detector OpenCV where
   detect BRISK = helper "BRISK"
+  detect FAST = helper "FAST"
 
