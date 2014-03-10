@@ -6,7 +6,7 @@ import Data.Bits.Lens
 import Control.Exception
 import Data.Word
 import Control.Lens
-import Data.Array.Repa hiding (map)
+import Data.Array.Repa hiding (map, extract)
 import Data.Maybe
 
 import OpenCVThrift.OpenCV
@@ -17,6 +17,7 @@ import OpenCVThrift.OpenCV.Features2D
 
 import LDBench.Extractor
 import LDBench.Convert
+import LDBench.Extractors.Convert
 
 data BRISK = BRISK
 
@@ -33,7 +34,14 @@ toRepa mat = do
 meld :: [[Double]] -> [Bool] -> [Maybe [Double]]
 meld rows mask = 
   assert (length rows == length (filter id mask)) $
-  undefined
+  case (rows, mask) of
+    ([], []) -> []
+    ([], _ : maskTail) -> Nothing : meld [] maskTail
+    (rowsHead : rowsTail, maskHead : maskTail) ->
+      if maskHead == False
+        then Nothing : meld rows maskTail
+        else Just rowsHead : meld rowsTail maskTail
+    _ -> undefined
 
 fromExtractorResponse :: ExtractorResponse -> OpenCVComputation [Maybe [Double]]
 fromExtractorResponse 
@@ -67,13 +75,13 @@ doubleToBitstring double =
 instance Extractor BRISK [Bool] where
   extract BRISK image keyPoints = do
     imageMat <- imageToMat image
-    ExtractorResponse (Just descriptors) (Just keyPointMask) <- convert3 
+    extractorResponse <- convert3 
       OpenCVThrift.OpenCV.Features2D.Features2D.extract 
       (Data.Text.Lazy.pack "BRISK")
       imageMat
       (Data.Vector.fromList keyPoints)
-    return $ do
-      index <- [0 .. Data.Vector.length keyPointMask - 1]
-      undefined
+    descriptorsAsDoubles <- fromExtractorResponse extractorResponse
+    return $ map (fmap (concatMap doubleToBitstring)) descriptorsAsDoubles
 
+  extractSingle BRISK = extractToExtractSingle $ extract BRISK
 
