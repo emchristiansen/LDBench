@@ -33,6 +33,7 @@ library
     LDBench.Extractors.Convert
     LDBench.Matcher
     LDBench.Experiments.RuntimeConfig
+    LDBench.Experiments.WideBaseline.Results
 
   default-language: 
     Haskell2010
