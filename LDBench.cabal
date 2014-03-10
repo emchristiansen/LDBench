@@ -20,10 +20,13 @@ library
     lib 
 
   exposed-modules:
-    LDBench.Image
     LDBench.Detector
-    LDBench.Detectors.OpenCV
+    LDBench.Image
+    LDBench.ImageBijection
+    LDBench.PairDetector
     LDBench.Detectors.BoundedDetector
+    LDBench.Detectors.BoundedPairDetector
+    LDBench.Detectors.OpenCV
 
   default-language: 
     Haskell2010
