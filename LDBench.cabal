@@ -26,6 +26,7 @@ library
     LDBench.PairDetector
     LDBench.Detectors.BoundedDetector
     LDBench.Detectors.BoundedPairDetector
+    LDBench.Detectors.DoublyBoundedPairDetector
     LDBench.Detectors.OpenCV
 
   default-language: 
