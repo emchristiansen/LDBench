@@ -12,6 +12,7 @@ import OpenCVThrift.OpenCV.Core.MatUtil
 import OpenCVThrift.OpenCV.Features2D.Features2D
 import qualified OpenCVThrift.OpenCV.Features2D.Features2D
 
+import LDBench.Convert
 
 -- TODO: We should not hard-code dependencies on any particular client.
 -- But we're doing it here cause it's easy.
@@ -21,17 +22,9 @@ import LDBench.Image
 import LDBench.Detector
 
 -- TODO: These enums should be defined as part of the Thrift interface.
-data OpenCV = BRISK | FAST
-
-imageToMatUnpacked :: Image -> MatUnpacked
-imageToMatUnpacked = undefined
-
-imageToMat :: Image -> OpenCV.OpenCVComputation Mat
-imageToMat image = 
-  let 
-    matUnpacked = imageToMatUnpacked image
-  in
-    OpenCV.convert2 pack T8UC3 matUnpacked
+{-data OpenCV = BRISK | FAST-}
+data BRISK = BRISK
+data FAST = FAST
 
 helper :: String -> Image -> OpenCV.OpenCVComputation [KeyPoint]
 helper detector image = do
@@ -43,7 +36,13 @@ helper detector image = do
   let sorted = reverse $ sortBy (comparing f_KeyPoint_response) $ Data.Vector.toList keyPoints
   return $ sorted 
 
-instance Detector OpenCV where
+instance Detector BRISK where
   detect BRISK = helper "BRISK"
+
+instance Detector FAST where
   detect FAST = helper "FAST"
+
+{-instance Detector OpenCV where-}
+  {-detect BRISK = helper "BRISK"-}
+  {-detect FAST = helper "FAST"-}
 
