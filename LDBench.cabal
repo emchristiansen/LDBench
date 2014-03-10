@@ -30,6 +30,8 @@ library
     LDBench.Detectors.OpenCV
     LDBench.Extractor
     LDBench.Extractors.OpenCV
+    LDBench.Extractors.Convert
+    LDBench.Matcher
 
   default-language: 
     Haskell2010
