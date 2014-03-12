@@ -20,7 +20,10 @@ import LDBench.Experiments.RuntimeConfig
 import LDBench.Image
 import LDBench.ImageBijection
 
-data Oxford d e m f = (PairDetector d, Extractor e f, Matcher m f) => Oxford
+{-foo :: forall a f. (Num a, Num f) => a -> f-}
+{-foo = undefined-}
+
+data Oxford d e m = forall f. (PairDetector d, Extractor e f, Matcher m f) => Oxford
   { _imageClass :: String
   , _otherImage :: Int
   , _maxPairedDescriptors :: Int
@@ -29,14 +32,14 @@ data Oxford d e m f = (PairDetector d, Extractor e f, Matcher m f) => Oxford
   , _matcher :: m 
   }
 
-dataRoot :: Oxford d e m f -> RuntimeConfig -> FilePath
+dataRoot :: Oxford d e m -> RuntimeConfig -> FilePath
 dataRoot oxford runtimeConfig = joinPath
   [ runtimeConfig ^. _dataRootLens
   , "oxfordImages"
   , _imageClass oxford
   ]
 
-readLeftImage :: Oxford d e m f -> RuntimeConfig -> IO Image
+readLeftImage :: Oxford d e m -> RuntimeConfig -> IO Image
 readLeftImage oxford runtimeConfig = do
   let 
     path = joinPath
@@ -46,7 +49,7 @@ readLeftImage oxford runtimeConfig = do
   putStrLn $ printf "Loading %s" path
   readImage path
 
-readRightImage :: Oxford d e m f -> RuntimeConfig -> IO Image
+readRightImage :: Oxford d e m -> RuntimeConfig -> IO Image
 readRightImage oxford runtimeConfig = do
   let 
     path = joinPath
@@ -57,7 +60,7 @@ readRightImage oxford runtimeConfig = do
   putStrLn $ printf "Loading %s" path
   readImage path
 
-imageBijection :: Oxford d e m f -> RuntimeConfig -> IO Homography
+imageBijection :: Oxford d e m -> RuntimeConfig -> IO Homography
 imageBijection oxford runtimeConfig = do
   let
     path = joinPath
@@ -71,7 +74,7 @@ imageBijection oxford runtimeConfig = do
 liftIO' :: IO a -> OpenCVComputation a
 liftIO' x = OpenCVComputation $ \_ -> x
 
-instance Experiment (Oxford d e m f) where
+instance Experiment (Oxford d e m) where
   run
     oxford @ (Oxford
       imageClass
@@ -85,6 +88,6 @@ instance Experiment (Oxford d e m f) where
       image1 <- liftIO' $ readRightImage oxford runtimeConfig
       homography <- liftIO' $ imageBijection oxford runtimeConfig
       (keyPoint0s, keyPoint1s) <- liftM unzip $ detectPairs detector homography image0 image1
-      {-descriptors0 <- extract extractor image0 keyPoint0s -}
+      descriptors0 <- extract extractor image0 keyPoint0s 
 
       undefined
