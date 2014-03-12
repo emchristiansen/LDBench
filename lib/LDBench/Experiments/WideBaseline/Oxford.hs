@@ -5,6 +5,8 @@ import Control.Monad
 import System.FilePath.Posix
 import Text.Printf
 import Data.List
+import Data.Maybe
+import Control.Exception
 
 import OpenCVThrift.OpenCV
 
@@ -74,6 +76,16 @@ imageBijection oxford runtimeConfig = do
 liftIO' :: IO a -> OpenCVComputation a
 liftIO' x = OpenCVComputation $ \_ -> x
 
+pairFlatten :: [Maybe a] -> [Maybe a] -> [(a, a)]
+pairFlatten x0s x1s = 
+  let
+    seqPair :: (Maybe a, Maybe a) -> Maybe (a, a)
+    seqPair (Just x0, Just x1) = Just (x0, x1)
+    seqPair _ = Nothing
+  in
+    assert (length x0s == length x1s) $
+    catMaybes $ map seqPair $ zip x0s x1s
+
 instance Experiment (Oxford d e m) where
   run
     oxford @ (Oxford
@@ -87,7 +99,11 @@ instance Experiment (Oxford d e m) where
       image0 <- liftIO' $ readLeftImage oxford runtimeConfig
       image1 <- liftIO' $ readRightImage oxford runtimeConfig
       homography <- liftIO' $ imageBijection oxford runtimeConfig
+      liftIO' $ putStrLn "Extracting keyPoints"
       (keyPoint0s, keyPoint1s) <- liftM unzip $ detectPairs detector homography image0 image1
-      descriptors0 <- extract extractor image0 keyPoint0s 
-
-      undefined
+      descriptor0Maybes <- extract extractor image0 keyPoint0s 
+      descriptor1Maybes <- extract extractor image1 keyPoint1s
+      let 
+        (descriptor0s, descriptor1s) = unzip $ take maxPairedDescriptors $ 
+          pairFlatten descriptor0Maybes descriptor1Maybes
+      liftM Results $ matchAll matcher descriptor0s descriptor1s
