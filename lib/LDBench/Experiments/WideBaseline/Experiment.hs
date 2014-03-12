@@ -1,7 +1,9 @@
 module LDBench.Experiments.WideBaseline.Experiment where
 
+import OpenCVThrift.OpenCV
+
 import LDBench.Experiments.RuntimeConfig
 import LDBench.Experiments.WideBaseline.Results
 
 class Experiment e where
-  run :: e -> RuntimeConfig -> Results
+  run :: e -> RuntimeConfig -> OpenCVComputation Results

@@ -34,6 +34,9 @@ library
     LDBench.Matcher
     LDBench.Experiments.RuntimeConfig
     LDBench.Experiments.WideBaseline.Results
+    LDBench.Experiments.WideBaseline.Experiment
+    LDBench.Experiments.WideBaseline.Oxford
+    LDBench.Experiments.WideBaseline.Homography
 
   default-language: 
     Haskell2010
@@ -71,6 +74,7 @@ library
     , vector
     , JuicyPixels
     , repa
+    , repa-algorithms
     , thrift
     , OpenCVThrift
     , OpenCVThriftLocalhost

@@ -32,3 +32,4 @@ instance Eq Image where
 
 instance Ord Image where
   left `compare` right = _properties left `compare` _properties right
+
