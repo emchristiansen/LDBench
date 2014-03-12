@@ -13,7 +13,7 @@ import LDBench.ImageBijection
 declareFields [d|
   data Homography = Homography
     { _data :: Array U DIM2 Double
-    } deriving (Show)
+    } deriving (Show, Read)
   |]
 
 toHomogeneous :: Array U DIM2 Double -> Array U DIM2 Double

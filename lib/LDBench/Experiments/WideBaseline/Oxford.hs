@@ -1,8 +1,12 @@
 module LDBench.Experiments.WideBaseline.Oxford where
 
 import Control.Lens
+import Control.Monad
 import System.FilePath.Posix
 import Text.Printf
+import Data.List
+
+import OpenCVThrift.OpenCV
 
 import LDBench.Util
 import LDBench.PairDetector
@@ -10,6 +14,8 @@ import LDBench.Extractor
 import LDBench.Matcher
 import LDBench.Experiments.WideBaseline.Results
 import LDBench.Experiments.WideBaseline.Experiment
+import LDBench.Experiments.WideBaseline.Util
+import LDBench.Experiments.WideBaseline.Homography
 import LDBench.Experiments.RuntimeConfig
 import LDBench.Image
 import LDBench.ImageBijection
@@ -30,26 +36,28 @@ dataRoot oxford runtimeConfig = joinPath
   , _imageClass oxford
   ]
 
-leftImage :: Oxford d e m f -> RuntimeConfig -> IO Image
-leftImage oxford runtimeConfig = do
+readLeftImage :: Oxford d e m f -> RuntimeConfig -> IO Image
+readLeftImage oxford runtimeConfig = do
   let 
     path = joinPath
       [ dataRoot oxford runtimeConfig
       , "images/image1.bmp"
       ]
+  putStrLn $ printf "Loading %s" path
   readImage path
 
-rightImage :: Oxford d e m f -> RuntimeConfig -> IO Image
-rightImage oxford runtimeConfig = do
+readRightImage :: Oxford d e m f -> RuntimeConfig -> IO Image
+readRightImage oxford runtimeConfig = do
   let 
     path = joinPath
       [ dataRoot oxford runtimeConfig
       , "images"
       , printf "image%d" $ _otherImage oxford
       ]
+  putStrLn $ printf "Loading %s" path
   readImage path
 
-imageBijection :: (ImageBijection b) => Oxford d e m f -> RuntimeConfig -> IO b
+imageBijection :: Oxford d e m f -> RuntimeConfig -> IO Homography
 imageBijection oxford runtimeConfig = do
   let
     path = joinPath
@@ -57,15 +65,26 @@ imageBijection oxford runtimeConfig = do
       , "homographies"
       , printf "H1to%dp" $ _otherImage oxford
       ]
-  undefined
+  putStrLn $ printf "Loading %s" path
+  readHomography path 
+
+liftIO' :: IO a -> OpenCVComputation a
+liftIO' x = OpenCVComputation $ \_ -> x
 
 instance Experiment (Oxford d e m f) where
   run
-    (Oxford
+    oxford @ (Oxford
       imageClass
       otherImage
       maxPairedDescriptors
       detector
       extractor
       matcher)
-    runtimeConfig = undefined 
+    runtimeConfig = do
+      image0 <- liftIO' $ readLeftImage oxford runtimeConfig
+      image1 <- liftIO' $ readRightImage oxford runtimeConfig
+      homography <- liftIO' $ imageBijection oxford runtimeConfig
+      (keyPoint0s, keyPoint1s) <- liftM unzip $ detectPairs detector homography image0 image1
+      {-descriptors0 <- extract extractor image0 keyPoint0s -}
+
+      undefined
