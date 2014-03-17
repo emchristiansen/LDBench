@@ -79,6 +79,30 @@ library
     , OpenCVThrift
     , OpenCVThriftLocalhost
 
+executable LDBench
+  hs-source-dirs:
+    bin
+
+  main-is:
+    Main.hs
+
+  default-language:
+    Haskell2010
+
+  build-depends:
+      base >= 4 && < 5
+    , optparse-applicative
+    , lens
+    , directory
+    , regex-compat
+    , filepath
+    , process
+    , filemanip
+    , LDBench
+
+  default-extensions:
+    TemplateHaskell
+
 --executable thriftier
   --hs-source-dirs:
     --bin
