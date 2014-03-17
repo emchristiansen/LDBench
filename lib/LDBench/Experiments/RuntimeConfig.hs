@@ -17,10 +17,10 @@ import Control.Lens.TH
 declareFields [d|
   data RuntimeConfig = RuntimeConfig
     { _dataRoot :: FilePath
-    , _database :: String
+    , _database :: Maybe String
     , _outputRoot :: FilePath
-    , _tempRoot :: FilePath
-    , _matlabLibraryRoot :: FilePath
+    , _tempRoot :: Maybe FilePath
+    , _matlabLibraryRoot :: Maybe FilePath
     , _deleteTemporaryFiles :: Bool
     , _skipCompletedExperiments :: Bool
     } deriving (Show, Typeable)

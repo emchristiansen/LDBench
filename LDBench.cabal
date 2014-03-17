@@ -34,6 +34,8 @@ library
     LDBench.Extractors.OpenCV
     LDBench.Extractors.Convert
     LDBench.Matcher
+    LDBench.Matchers.Vector
+    LDBench.Matchers.Convert
     LDBench.Experiments.RuntimeConfig
     LDBench.Experiments.WideBaseline.Results
     LDBench.Experiments.WideBaseline.Experiment
@@ -102,7 +104,8 @@ executable LDBench
     , filepath
     , process
     , filemanip
-    , plugins
+    --, plugins
+    , hint
     , LDBench
 
   default-extensions:
@@ -111,6 +114,7 @@ executable LDBench
     FunctionalDependencies
     TypeSynonymInstances
     FlexibleInstances
+    RankNTypes
 
 --executable thriftier
   --hs-source-dirs:
