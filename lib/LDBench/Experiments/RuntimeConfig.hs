@@ -1,5 +1,6 @@
 module LDBench.Experiments.RuntimeConfig where
 
+import Data.Typeable
 import Control.Lens
 import Control.Lens.TH
 
@@ -22,5 +23,5 @@ declareFields [d|
     , _matlabLibraryRoot :: FilePath
     , _deleteTemporaryFiles :: Bool
     , _skipCompletedExperiments :: Bool
-    } deriving (Show)
+    } deriving (Show, Typeable)
   |]

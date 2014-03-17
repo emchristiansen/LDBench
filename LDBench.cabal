@@ -21,6 +21,8 @@ library
 
   exposed-modules:
     LDBench.Detector
+    LDBench.Convert
+    LDBench.Util
     LDBench.Image
     LDBench.ImageBijection
     LDBench.PairDetector
@@ -37,6 +39,7 @@ library
     LDBench.Experiments.WideBaseline.Experiment
     LDBench.Experiments.WideBaseline.Oxford
     LDBench.Experiments.WideBaseline.Homography
+    LDBench.Experiments.WideBaseline.Util
 
   default-language: 
     Haskell2010
@@ -52,6 +55,7 @@ library
     OverloadedStrings
     RankNTypes
     GADTs
+    DeriveDataTypeable
 
   ghc-options: 
     -Wall 
@@ -98,10 +102,15 @@ executable LDBench
     , filepath
     , process
     , filemanip
+    , plugins
     , LDBench
 
   default-extensions:
     TemplateHaskell
+    MultiParamTypeClasses
+    FunctionalDependencies
+    TypeSynonymInstances
+    FlexibleInstances
 
 --executable thriftier
   --hs-source-dirs:
