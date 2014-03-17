@@ -63,7 +63,8 @@ argumentsParser pwd = Arguments
 
 imports :: [String]
 imports =
-  [ "LDBench.Experiments.RuntimeConfig"
+  [ "Prelude"
+  , "LDBench.Experiments.RuntimeConfig"
   , "LDBench.Experiments.WideBaseline.Oxford"
   , "LDBench.Detectors.DoublyBoundedPairDetector"
   , "LDBench.Detectors.OpenCV"
@@ -71,10 +72,12 @@ imports =
   , "LDBench.Matchers.Vector"
   ]
 
-evalFromPath :: Typeable a => FilePath -> IO a
+{-evalFromPath :: forall a. Typeable a => FilePath -> IO a-}
+evalFromPath :: forall a. Typeable a => FilePath -> IO (Either InterpreterError a)
 evalFromPath path = do
-  undefined
-  {-source <- readFile path-}
+  source <- readFile path
+  value <- runInterpreter $ setImports imports >> interpret source (as :: a)
+  return value
   {-liftM fromJust $ eval source imports-}
 
 {-foo = do-}
@@ -85,6 +88,8 @@ run :: Arguments -> IO ()
 run arguments = do
   foo <- runInterpreter $ setImports ["Prelude"] >> interpret "head [True,False]" (as :: Bool)
   putStrLn $ show foo
+  runtimeConfig <- evalFromPath $ arguments ^. runtimeConfigPathLens :: IO (Either InterpreterError RuntimeConfig)
+  putStrLn $ show runtimeConfig
   {-runtimeConfig <- evalFromPath $ arguments ^. runtimeConfigPathLens :: IO RuntimeConfig-}
   {-putStrLn $ show runtimeConfig-}
   {-i <- unsafeEval "1 + 6 :: Int" [] :: IO (Maybe Int)-}

@@ -115,6 +115,8 @@ executable LDBench
     TypeSynonymInstances
     FlexibleInstances
     RankNTypes
+    GADTs
+    ScopedTypeVariables
 
 --executable thriftier
   --hs-source-dirs:
