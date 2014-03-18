@@ -13,7 +13,9 @@ import Control.Arrow ((&&&))
 import Data.Word (Word8)
 import Data.Vector.Storable (Vector)
 import Text.Printf
+import OpenCVThrift.OpenCV
 
+import OpenCVThrift.OpenCV.Core
 import LDBench.Image
 
 transcodeToImageRGBA8 :: DynamicImage -> Maybe Image
@@ -46,3 +48,14 @@ readImageSafe filePath = do
 
 readImage :: FilePath -> IO Image
 readImage = liftM fromJust . readImageSafe
+
+l2Distance :: KeyPoint -> KeyPoint -> Double
+l2Distance keyPoint0 keyPoint1 = 
+  let
+    Just (Point2d (Just x0) (Just y0)) = f_KeyPoint_pt keyPoint0
+    Just (Point2d (Just x1) (Just y1)) = f_KeyPoint_pt keyPoint1
+  in
+    sqrt $ (x0 - x1) ** 2 + (y0 - y1) ** 2
+
+liftIO' :: IO a -> OpenCVComputation a
+liftIO' x = OpenCVComputation $ \_ -> x

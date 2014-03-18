@@ -12,6 +12,7 @@ import OpenCVThrift.OpenCV.Core
 import LDBench.Image
 import LDBench.Detector
 import LDBench.ImageBijection
+import LDBench.Util
 
 class PairDetector d where
   detectPairs :: 
@@ -21,9 +22,6 @@ class PairDetector d where
       Image -> 
       Image -> 
       OpenCVComputation [(KeyPoint, KeyPoint)]
-
-l2Distance :: KeyPoint -> KeyPoint -> Double
-l2Distance = undefined
 
 nearestUnderBijection :: 
   Double -> (KeyPoint -> KeyPoint) -> KeyPoint -> [KeyPoint] -> Maybe KeyPoint

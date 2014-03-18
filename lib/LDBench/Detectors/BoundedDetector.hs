@@ -7,6 +7,8 @@ import Control.Applicative
 import OpenCVThrift.OpenCV.Core
 
 import LDBench.Detector
+import LDBench.Util
+import Text.Printf
 
 data BoundedDetector d = (Detector d) => BoundedDetector 
   { _maxKeyPointsL :: Int
@@ -22,5 +24,7 @@ detectorL f (BoundedDetector a b) = (\b' -> BoundedDetector a b') <$> f b
 instance Detector (BoundedDetector d) where
   detect (BoundedDetector maxKeyPoints detector) image = do 
     keyPoints <- detect detector image
+    liftIO' $ putStrLn $ printf "BoundedDetector num KeyPoint detections: %d" $ length keyPoints
+    liftIO' $ putStrLn $ show $ take 10 keyPoints
     return $ take maxKeyPoints keyPoints
 

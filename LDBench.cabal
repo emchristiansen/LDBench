@@ -104,7 +104,13 @@ executable LDBench
     , filepath
     , process
     , filemanip
+    , MissingH
+    , errors
+    , split
+    --, strict
     --, plugins
+    , OpenCVThriftLocalhost
+    , OpenCVThrift
     , hint
     , LDBench
 
@@ -117,6 +123,13 @@ executable LDBench
     RankNTypes
     GADTs
     ScopedTypeVariables
+
+  ghc-options: 
+    -Wall 
+    ---prof
+    ---fprof-auto
+    ---fprof-cafs
+    ---O2
 
 --executable thriftier
   --hs-source-dirs:

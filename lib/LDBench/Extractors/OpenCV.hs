@@ -41,7 +41,7 @@ meld rows mask =
       if maskHead == False
         then Nothing : meld rows maskTail
         else Just rowsHead : meld rowsTail maskTail
-    _ -> undefined
+    _ -> error "This should not happen." 
 
 fromExtractorResponse :: ExtractorResponse -> OpenCVComputation [Maybe [Double]]
 fromExtractorResponse 

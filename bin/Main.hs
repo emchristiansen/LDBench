@@ -11,11 +11,25 @@ import Control.Lens
 import Control.Monad
 {-import System.Eval.Haskell-}
 import Data.Typeable
+import Control.Error.Util 
+{-import Data.Strict.Either (isLeft, fromLeft)-}
+import Data.Either.Utils
 import Language.Haskell.Interpreter
+import Control.Exception
+import OpenCVLocalhost
 
 import Options.Applicative
 import LDBench.Experiments.RuntimeConfig
 import LDBench.Experiments.WideBaseline.Oxford
+
+import OpenCVThrift.OpenCV
+import LDBench.Experiments.WideBaseline.Oxford
+import LDBench.Experiments.WideBaseline.Experiment
+import LDBench.Detectors.DoublyBoundedPairDetector
+import qualified LDBench.Detectors.OpenCV as D
+import qualified LDBench.Extractors.OpenCV as E
+import LDBench.Matchers.Vector
+import LDBench.Experiments.RuntimeConfig
 
 {-data CodeType = ImplementationStub | Client deriving (Eq, Show)-}
 
@@ -73,30 +87,65 @@ imports =
   ]
 
 {-evalFromPath :: forall a. Typeable a => FilePath -> IO a-}
-evalFromPath :: forall a. Typeable a => FilePath -> IO (Either InterpreterError a)
+evalFromPath :: forall a. Typeable a => FilePath -> IO a
 evalFromPath path = do
   source <- readFile path
-  value <- runInterpreter $ setImports imports >> interpret source (as :: a)
-  return value
+  output <- runInterpreter $ setImports imports >> interpret source (as :: a)
+  when (isLeft output) $ putStrLn $ show $ fromLeft output
+  {-case output of-}
+    {-Left error -> do-}
+      {-putStrLn $ show error-}
+      {-return $ assert False-}
+    {-_ -> do-}
+      {-return ()-}
+  let Right value = output
+  return value 
   {-liftM fromJust $ eval source imports-}
 
-{-foo = do-}
-  {-_ <- setImports ["Prelude"]-}
-  {-interpret "head [True, False]" (as :: Bool)-}
+imports' :: [(String, Maybe String)]
+imports' =
+  [ ("Prelude", Nothing)
+  , ("LDBench.Experiments.RuntimeConfig", Nothing)
+  , ("LDBench.Experiments.WideBaseline.Oxford", Nothing)
+  , ("LDBench.Detectors.DoublyBoundedPairDetector", Nothing)
+  , ("LDBench.Detectors.OpenCV", Just "D")
+  , ("LDBench.Extractors.OpenCV", Just "E")
+  , ("LDBench.Matchers.Vector", Nothing)
+  ]
+
+runFromPath :: FilePath -> RuntimeConfig -> Interpreter ()
+runFromPath path runtimeConfig = do
+  loadModules [path]
+  let moduleName = dropExtension . takeFileName $ path
+  setTopLevelModules [moduleName]
+  {-setImportsQ imports'-}
+  {-setImports imports-}
+  liftIO $ putStrLn $ "Interpreting task file."
+  run <- interpret "run" (as :: RuntimeConfig -> IO ())
+  liftIO $ putStrLn $ "Task file compiled."
+  liftIO $ putStrLn $ "Running."
+  liftIO $ run runtimeConfig
+  liftIO $ putStrLn $ "Finished."
+
+oxford = Oxford
+  "boat"
+  2
+  10
+  (DoublyBoundedPairDetector 200 100 2.0 D.BRISK)
+  E.BRISK
+  L0
 
 run :: Arguments -> IO ()
 run arguments = do
   foo <- runInterpreter $ setImports ["Prelude"] >> interpret "head [True,False]" (as :: Bool)
   putStrLn $ show foo
-  runtimeConfig <- evalFromPath $ arguments ^. runtimeConfigPathLens :: IO (Either InterpreterError RuntimeConfig)
+  runtimeConfig <- evalFromPath $ arguments ^. runtimeConfigPathLens :: IO RuntimeConfig
   putStrLn $ show runtimeConfig
-  {-runtimeConfig <- evalFromPath $ arguments ^. runtimeConfigPathLens :: IO RuntimeConfig-}
-  {-putStrLn $ show runtimeConfig-}
-  {-i <- unsafeEval "1 + 6 :: Int" [] :: IO (Maybe Int)-}
-  {-putStrLn $ show i-}
-  {-experiment <- evalFromPath $ arguments ^. experimentPathLens :: IO String-}
-  {-putStrLn $ show experiment -}
-  undefined
+  {-x <- runInterpreter $ runFromPath (arguments ^. experimentPathLens) runtimeConfig-}
+  {-putStrLn $ show x-}
+  client <- openCVClient
+  results <- runOpenCVComputation (runExperiment oxford runtimeConfig) client
+  putStrLn $ show results
 
 description :: String
 description = unlines

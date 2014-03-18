@@ -46,7 +46,7 @@ readLeftImage oxford runtimeConfig = do
   let 
     path = joinPath
       [ dataRoot oxford runtimeConfig
-      , "images/image1.bmp"
+      , "images/img1.bmp"
       ]
   putStrLn $ printf "Loading %s" path
   readImage path
@@ -57,7 +57,7 @@ readRightImage oxford runtimeConfig = do
     path = joinPath
       [ dataRoot oxford runtimeConfig
       , "images"
-      , printf "image%d" $ _otherImage oxford
+      , printf "img%d.bmp" $ _otherImage oxford
       ]
   putStrLn $ printf "Loading %s" path
   readImage path
@@ -73,8 +73,6 @@ imageBijection oxford runtimeConfig = do
   putStrLn $ printf "Loading %s" path
   readHomography path 
 
-liftIO' :: IO a -> OpenCVComputation a
-liftIO' x = OpenCVComputation $ \_ -> x
 
 pairFlatten :: [Maybe a] -> [Maybe a] -> [(a, a)]
 pairFlatten x0s x1s = 
@@ -87,7 +85,7 @@ pairFlatten x0s x1s =
     catMaybes $ map seqPair $ zip x0s x1s
 
 instance Experiment (Oxford d e m) where
-  run
+  runExperiment
     oxford @ (Oxford
       imageClass
       otherImage
@@ -99,11 +97,17 @@ instance Experiment (Oxford d e m) where
       image0 <- liftIO' $ readLeftImage oxford runtimeConfig
       image1 <- liftIO' $ readRightImage oxford runtimeConfig
       homography <- liftIO' $ imageBijection oxford runtimeConfig
-      liftIO' $ putStrLn "Extracting keyPoints"
+      liftIO' $ putStrLn "Detecting keyPoints"
       (keyPoint0s, keyPoint1s) <- liftM unzip $ detectPairs detector homography image0 image1
+      liftIO' $ putStrLn $ 
+        printf "Num KeyPoint pairs: %d" $ length keyPoint0s
+      liftIO' $ putStrLn "Extracting descriptors"
       descriptor0Maybes <- extract extractor image0 keyPoint0s 
       descriptor1Maybes <- extract extractor image1 keyPoint1s
       let 
         (descriptor0s, descriptor1s) = unzip $ take maxPairedDescriptors $ 
           pairFlatten descriptor0Maybes descriptor1Maybes
+      liftIO' $ putStrLn $ 
+        printf "Num final descriptor pairs: %d" $ length descriptor0s
+      liftIO' $ putStrLn "Matching descriptors"
       liftM Results $ matchAll matcher descriptor0s descriptor1s

@@ -6,4 +6,4 @@ import LDBench.Experiments.RuntimeConfig
 import LDBench.Experiments.WideBaseline.Results
 
 class Experiment e where
-  run :: e -> RuntimeConfig -> OpenCVComputation Results
+  runExperiment :: e -> RuntimeConfig -> OpenCVComputation Results
